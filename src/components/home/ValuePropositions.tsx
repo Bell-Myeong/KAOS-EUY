@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion';
 import { Sparkles, Zap, Heart, MapPin } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { staggerContainer, staggerItem } from '@/lib/animations';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ValueProp {
@@ -61,17 +60,14 @@ export function ValuePropositions() {
           </p>
         </motion.div>
 
-        <motion.div
-          variants={staggerContainer}
-          initial="initial"
-          whileInView="animate"
-          viewport={{ once: true }}
-          className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8"
-        >
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {valueProps.map((prop, index) => (
             <motion.div
               key={index}
-              variants={staggerItem}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
               whileHover={{ y: -8, transition: { duration: 0.2 } }}
               className="group"
             >
@@ -92,7 +88,7 @@ export function ValuePropositions() {
               </div>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

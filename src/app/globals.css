@@ -35,3 +35,21 @@
     @apply max-w-7xl mx-auto;
   }
 }
+
+/* CSS Animation Fallback for Framer Motion */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ensure content is visible if JS fails to load */
+[style*="opacity: 0"],
+[style*="opacity:0"] {
+  animation: fadeInUp 0.5s ease forwards;
+}

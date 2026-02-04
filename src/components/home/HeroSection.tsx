@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/common/Button';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { fadeInUp, staggerContainer, staggerItem } from '@/lib/animations';
 
 export function HeroSection() {
   const { t } = useLanguage();
@@ -14,13 +13,12 @@ export function HeroSection() {
       <div className="container mx-auto px-4 py-20 md:py-32">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left: Text Content */}
-          <motion.div
-            variants={staggerContainer}
-            initial="initial"
-            animate="animate"
-            className="space-y-6"
-          >
-            <motion.div variants={staggerItem}>
+          <div className="space-y-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-secondary leading-tight">
                 {t('hero.title1')}
                 <br />
@@ -28,21 +26,29 @@ export function HeroSection() {
               </h1>
             </motion.div>
 
-            <motion.div variants={staggerItem}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
               <h2 className="text-4xl md:text-5xl font-bold text-primary font-pacifico">
                 {t('hero.subtitle')} 🎨
               </h2>
             </motion.div>
 
             <motion.p
-              variants={staggerItem}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
               className="text-lg md:text-xl text-gray-600 max-w-lg"
             >
               {t('hero.description')}
             </motion.p>
 
             <motion.div
-              variants={staggerItem}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
               className="flex flex-col sm:flex-row gap-4 pt-4"
             >
               <Link href="/custom-order">
@@ -63,7 +69,9 @@ export function HeroSection() {
 
             {/* Stats */}
             <motion.div
-              variants={staggerItem}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
               className="flex gap-8 pt-8 border-t border-gray-200"
             >
               <div>
@@ -79,7 +87,7 @@ export function HeroSection() {
                 <div className="text-sm text-gray-600">{t('hero.daysProduction')}</div>
               </div>
             </motion.div>
-          </motion.div>
+          </div>
 
           {/* Right: Visual */}
           <motion.div
