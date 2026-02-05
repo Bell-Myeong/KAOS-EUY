@@ -1,0 +1,147 @@
+{
+  "brand": {
+    "name": "Kaos EUY!",
+    "tagline": "Bandung's Pride, Your Style",
+    "slogan": "Kaos premium dengan sentuhan khas Bandung"
+  },
+  "nav": {
+    "home": "Beranda",
+    "catalog": "Katalog",
+    "customOrder": "Bikin Kaos EUY!",
+    "about": "Tentang Kami",
+    "contact": "Hubungi"
+  },
+  "home": {
+    "hero": {
+      "title": "Bikin Kaos EUY!",
+      "subtitle": "Desainmu, Gayamu, Bandungmu.",
+      "description": "Kaos premium dengan sentuhan khas Bandung. Custom mudah, kualitas juara.",
+      "ctaPrimary": "Mulai Desain",
+      "ctaSecondary": "Lihat Koleksi"
+    },
+    "valueProps": {
+      "title": "Kenapa Pilih Kaos EUY!?",
+      "design": {
+        "title": "Desain Bebas, Hasil Maksimal",
+        "description": "Unggah desainmu sendiri atau pilih dari template keren kami."
+      },
+      "quality": {
+        "title": "Kualitas Nggak Bohong",
+        "description": "Cotton combed premium, sablon awet, jahitan rapi."
+      },
+      "quantity": {
+        "title": "Pesan Satuan atau Ratusan",
+        "description": "Mau 1 biji atau 1000? Bisa semua, EUY!"
+      }
+    },
+    "cta": {
+      "title": "Siap Bikin Kaos Impianmu?",
+      "description": "3 langkah mudah: Pilih - Desain - Pesan. Gampang, kan?",
+      "button": "Yuk, Cobain Sekarang!"
+    },
+    "featured": {
+      "title": "Koleksi Terbaru",
+      "description": "Lihat desain-desain keren yang udah kami bikin",
+      "button": "Lihat Semua Produk"
+    }
+  },
+  "customOrder": {
+    "title": "Yuk, Bikin Kaos Impianmu!",
+    "subtitle": "3 langkah mudah: Pilih - Desain - Pesan. Gampang, kan?",
+    "selectType": "Pilih Jenis Pesanan",
+    "personal": {
+      "title": "Pesanan Pribadi",
+      "description": "Untuk kebutuhan personal atau hadiah",
+      "feature1": "Minimal 1 kaos, maksimal 10 kaos",
+      "feature2": "Desain bebas sesuai keinginan",
+      "feature3": "Proses cepat 7-14 hari",
+      "feature4": "Cocok untuk hadiah spesial",
+      "button": "Mulai Pesanan Pribadi"
+    },
+    "bulk": {
+      "title": "Pesanan Grosir",
+      "description": "Untuk kantor, komunitas, atau event",
+      "feature1": "Minimal 10 kaos, tanpa batas maksimal",
+      "feature2": "Harga spesial untuk jumlah banyak",
+      "feature3": "Konsultasi desain GRATIS",
+      "feature4": "Sample gratis untuk pesanan 100+ pcs",
+      "button": "Mulai Pesanan Grosir"
+    },
+    "help": {
+      "text": "Masih bingung mau pilih yang mana?",
+      "button": "Chat via WhatsApp"
+    }
+  },
+  "personalOrder": {
+    "title": "Pesanan Pribadi",
+    "subtitle": "Isi form di bawah untuk mulai bikin kaos impianmu",
+    "contactInfo": "Informasi Kontak",
+    "productDetails": "Detail Produk",
+    "design": "Desain",
+    "fields": {
+      "fullName": "Nama Lengkap",
+      "fullNamePlaceholder": "Masukkan nama lengkap",
+      "email": "Email",
+      "emailPlaceholder": "nama@email.com",
+      "whatsapp": "Nomor WhatsApp",
+      "whatsappPlaceholder": "081234567890",
+      "size": "Ukuran",
+      "sizePlaceholder": "Pilih ukuran",
+      "quantity": "Jumlah (1-10 pcs)",
+      "quantityPlaceholder": "1",
+      "color": "Warna Kaos",
+      "colorPlaceholder": "Pilih warna",
+      "designDescription": "Deskripsikan desain yang kamu inginkan",
+      "designDescriptionPlaceholder": "Contoh: Saya ingin desain dengan tema Bandung, ada gambar Gedung Sate dengan tulisan 'Bandung Juara' di bawahnya...",
+      "colors": {
+        "white": "Putih",
+        "black": "Hitam",
+        "navy": "Navy",
+        "gray": "Abu-abu",
+        "red": "Merah",
+        "yellow": "Kuning"
+      }
+    },
+    "required": "*",
+    "submitButton": "Kirim Pesanan",
+    "submitting": "Mengirim...",
+    "footerNote": "Tim kami akan menghubungi kamu dalam 1x24 jam via WhatsApp",
+    "successMessage": "Pesanan berhasil dibuat! Tim kami akan segera menghubungi kamu via WhatsApp.",
+    "errors": {
+      "nameMin": "Nama minimal 2 karakter",
+      "emailInvalid": "Email tidak valid",
+      "phoneMin": "Nomor telepon tidak valid",
+      "colorRequired": "Pilih warna",
+      "designMin": "Deskripsikan desain yang kamu inginkan (minimal 10 karakter)"
+    }
+  },
+  "footer": {
+    "brandDescription": "Desain asli Bandung dengan kualitas premium",
+    "quickLinks": "Link Cepat",
+    "information": "Informasi",
+    "followUs": "Ikuti Kami",
+    "copyright": "Bandung, Indonesia. Hatur nuhun!",
+    "links": {
+      "catalog": "Katalog Produk",
+      "customOrder": "Custom Order",
+      "sizeGuide": "Panduan Ukuran",
+      "faq": "FAQ",
+      "about": "Tentang Kami",
+      "contact": "Hubungi Kami",
+      "terms": "Syarat & Ketentuan"
+    }
+  },
+  "common": {
+    "loading": "Memuat...",
+    "error": "Error",
+    "success": "Berhasil",
+    "cancel": "Batal",
+    "confirm": "Konfirmasi",
+    "close": "Tutup",
+    "save": "Simpan",
+    "delete": "Hapus",
+    "edit": "Edit",
+    "viewMore": "Lihat Lebih Banyak",
+    "selectLanguage": "Bahasa"
+  }
+}

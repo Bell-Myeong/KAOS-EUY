@@ -1,0 +1,147 @@
+{
+  "brand": {
+    "name": "Kaos EUY!",
+    "tagline": "Bandung's Pride, Your Style",
+    "slogan": "Premium t-shirts with a touch of Bandung"
+  },
+  "nav": {
+    "home": "Home",
+    "catalog": "Catalog",
+    "customOrder": "Create Your Shirt!",
+    "about": "About Us",
+    "contact": "Contact"
+  },
+  "home": {
+    "hero": {
+      "title": "Create Your Shirt!",
+      "subtitle": "Your Design, Your Style, Your Bandung.",
+      "description": "Premium t-shirts with a touch of Bandung. Easy customization, champion quality.",
+      "ctaPrimary": "Start Designing",
+      "ctaSecondary": "View Collection"
+    },
+    "valueProps": {
+      "title": "Why Choose Kaos EUY!?",
+      "design": {
+        "title": "Free Design, Maximum Results",
+        "description": "Upload your own design or choose from our cool templates."
+      },
+      "quality": {
+        "title": "Honest Quality",
+        "description": "Premium combed cotton, durable printing, neat stitching."
+      },
+      "quantity": {
+        "title": "Order Single or Hundreds",
+        "description": "Want 1 piece or 1000? We can do it all!"
+      }
+    },
+    "cta": {
+      "title": "Ready to Create Your Dream Shirt?",
+      "description": "3 easy steps: Choose - Design - Order. Easy, right?",
+      "button": "Try It Now!"
+    },
+    "featured": {
+      "title": "Latest Collection",
+      "description": "Check out the cool designs we've created",
+      "button": "View All Products"
+    }
+  },
+  "customOrder": {
+    "title": "Let's Create Your Dream Shirt!",
+    "subtitle": "3 easy steps: Choose - Design - Order. Easy, right?",
+    "selectType": "Choose Order Type",
+    "personal": {
+      "title": "Personal Order",
+      "description": "For personal needs or gifts",
+      "feature1": "Minimum 1 shirt, maximum 10 shirts",
+      "feature2": "Free design as you wish",
+      "feature3": "Fast process 7-14 days",
+      "feature4": "Perfect for special gifts",
+      "button": "Start Personal Order"
+    },
+    "bulk": {
+      "title": "Bulk Order",
+      "description": "For office, community, or events",
+      "feature1": "Minimum 10 shirts, no maximum limit",
+      "feature2": "Special prices for large quantities",
+      "feature3": "FREE design consultation",
+      "feature4": "Free sample for orders 100+ pcs",
+      "button": "Start Bulk Order"
+    },
+    "help": {
+      "text": "Still confused which one to choose?",
+      "button": "Chat via WhatsApp"
+    }
+  },
+  "personalOrder": {
+    "title": "Personal Order",
+    "subtitle": "Fill out the form below to start creating your dream shirt",
+    "contactInfo": "Contact Information",
+    "productDetails": "Product Details",
+    "design": "Design",
+    "fields": {
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "Enter full name",
+      "email": "Email",
+      "emailPlaceholder": "name@email.com",
+      "whatsapp": "WhatsApp Number",
+      "whatsappPlaceholder": "081234567890",
+      "size": "Size",
+      "sizePlaceholder": "Select size",
+      "quantity": "Quantity (1-10 pcs)",
+      "quantityPlaceholder": "1",
+      "color": "Shirt Color",
+      "colorPlaceholder": "Select color",
+      "designDescription": "Describe the design you want",
+      "designDescriptionPlaceholder": "Example: I want a Bandung-themed design with a Gedung Sate illustration and 'Bandung Juara' text below it...",
+      "colors": {
+        "white": "White",
+        "black": "Black",
+        "navy": "Navy",
+        "gray": "Gray",
+        "red": "Red",
+        "yellow": "Yellow"
+      }
+    },
+    "required": "*",
+    "submitButton": "Submit Order",
+    "submitting": "Submitting...",
+    "footerNote": "Our team will contact you within 24 hours via WhatsApp",
+    "successMessage": "Order successfully created! Our team will contact you soon via WhatsApp.",
+    "errors": {
+      "nameMin": "Name must be at least 2 characters",
+      "emailInvalid": "Invalid email",
+      "phoneMin": "Invalid phone number",
+      "colorRequired": "Select a color",
+      "designMin": "Describe the design you want (minimum 10 characters)"
+    }
+  },
+  "footer": {
+    "brandDescription": "Original Bandung design with premium quality",
+    "quickLinks": "Quick Links",
+    "information": "Information",
+    "followUs": "Follow Us",
+    "copyright": "Bandung, Indonesia. Thank you!",
+    "links": {
+      "catalog": "Product Catalog",
+      "customOrder": "Custom Order",
+      "sizeGuide": "Size Guide",
+      "faq": "FAQ",
+      "about": "About Us",
+      "contact": "Contact Us",
+      "terms": "Terms & Conditions"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "viewMore": "View More",
+    "selectLanguage": "Language"
+  }
+}
