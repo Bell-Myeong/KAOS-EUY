@@ -1,28 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ShoppingCart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useCartStore } from '@/stores/cart';
+import { useMemo } from 'react';
+import { useCartItems } from '@/lib/hooks/useCart';
 
 export function CartIndicator() {
-  const [mounted, setMounted] = useState(false);
-  const itemCount = useCartStore((state) => state.getItemCount());
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return (
-      <Link href="/cart" className="relative group">
-        <div className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
-          <ShoppingCart className="w-6 h-6 text-secondary group-hover:text-primary transition-colors" />
-        </div>
-      </Link>
-    );
-  }
+  const { data } = useCartItems();
+  const itemCount = useMemo(() => {
+    return (data ?? []).reduce((sum, item) => sum + item.quantity, 0);
+  }, [data]);
 
   return (
     <Link

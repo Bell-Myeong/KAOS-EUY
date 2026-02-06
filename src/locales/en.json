@@ -81,9 +81,9 @@
     }
   },
   "ctaBanner": {
-    "title": "Have a Design Idea?",
-    "description": "Our design team is ready to help bring it to life! From concept to production, we guide you every step of the way.",
-    "button": "Start Custom Order"
+    "title": "Ready to Customize?",
+    "description": "Choose a product from our catalog and personalize it with your design.",
+    "button": "Browse Catalog"
   },
   "nav": {
     "home": "Home",

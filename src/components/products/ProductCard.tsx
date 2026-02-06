@@ -9,6 +9,10 @@ import type { Product } from '@/types';
 import { Badge } from '@/components/common/Badge';
 import { formatIDR } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Button } from '@/components/common/Button';
+import { QuickAddModal } from '@/components/products/QuickAddModal';
+import { useAuth } from '@/contexts/AuthContext';
+import { usePathname, useRouter } from 'next/navigation';
 
 export interface ProductCardProps {
   product: Product;
@@ -20,6 +24,10 @@ export function ProductCard({
   const { t } = useLanguage();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const { user } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
 
   return (
     <motion.div
@@ -122,12 +130,29 @@ export function ProductCard({
 
           {/* View Details Button */}
           {product.in_stock ? (
-            <Link
-              href={`/products/${product.slug}`}
-              className="w-full bg-primary text-white py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
-            >
-              {t('products.viewDetails') || 'View Details'}
-            </Link>
+            <div className="flex gap-2">
+              <Link className="flex-1" href={`/products/${product.slug}`}>
+                <Button variant="outline" size="sm" fullWidth>
+                  {t('products.viewDetails') || 'View Details'}
+                </Button>
+              </Link>
+              <Button
+                variant="primary"
+                size="sm"
+                className="flex-1"
+                onClick={() => {
+                  if (!user) {
+                    router.push(
+                      `/auth/sign-in?next=${encodeURIComponent(pathname || '/products')}`
+                    );
+                    return;
+                  }
+                  setQuickAddOpen(true);
+                }}
+              >
+                Add
+              </Button>
+            </div>
           ) : (
             <button
               disabled
@@ -138,6 +163,12 @@ export function ProductCard({
           )}
         </div>
       </div>
+
+      <QuickAddModal
+        product={product}
+        isOpen={quickAddOpen}
+        onClose={() => setQuickAddOpen(false)}
+      />
     </motion.div>
   );
 }

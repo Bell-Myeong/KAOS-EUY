@@ -26,7 +26,7 @@ export function CTABanner() {
             {t('ctaBanner.description')}
           </p>
 
-          <Link href="/custom-order">
+          <Link href="/products">
             <Button
               variant="secondary"
               size="lg"

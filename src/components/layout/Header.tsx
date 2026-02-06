@@ -6,10 +6,14 @@ import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 import { CartIndicator } from '@/components/cart/CartIndicator';
+import { AuthButton } from '@/components/auth/AuthButton';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/common/Button';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { t } = useLanguage();
+  const { user, isLoading, signOut } = useAuth();
 
   const navLinks = [
     { href: '/products', label: t('nav.catalog') },
@@ -58,6 +62,9 @@ export default function Header() {
             {/* Cart Indicator */}
             <CartIndicator />
 
+            {/* Auth */}
+            <AuthButton />
+
             {/* Mobile Menu Button */}
             <button
               className="md:hidden"
@@ -99,6 +106,30 @@ export default function Header() {
             <div className="pt-2 border-t border-gray-200">
               <LanguageSwitcher />
             </div>
+
+            {!isLoading && (
+              <div className="pt-2 border-t border-gray-200">
+                {!user ? (
+                  <Link href="/auth/sign-in" onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="outline" size="sm" fullWidth>
+                      Sign in
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    fullWidth
+                    onClick={async () => {
+                      await signOut();
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    Sign out
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         )}
       </nav>
