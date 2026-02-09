@@ -25,7 +25,15 @@ export function CartItem({
   onRemove,
 }: CartItemProps) {
   const { t } = useLanguage();
-  const itemTotal = item.product.price * item.quantity;
+  const unitTotal = item.product.price + (item.custom_fee_per_unit ?? 0);
+  const itemTotal = unitTotal * item.quantity;
+  const appliedCount = item.customization?.applied_positions?.length ?? 0;
+  const colorIndex =
+    item.product.colors?.findIndex((c) => c.code === item.color.code) ?? -1;
+  const imageSrc =
+    colorIndex >= 0 && colorIndex < item.product.images.length
+      ? item.product.images[colorIndex]
+      : item.product.images[0];
 
   return (
     <div className="flex gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
@@ -40,7 +48,7 @@ export function CartItem({
       <Link href={`/products/${item.product.slug}`} className="flex-shrink-0">
         <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-gray-100">
           <Image
-            src={item.product.images[0]}
+            src={imageSrc}
             alt={item.product.name}
             fill
             className="object-cover"
@@ -73,12 +81,18 @@ export function CartItem({
             <span>{t('cart.size')}: </span>
             <span className="font-medium">{item.size}</span>
           </div>
+          {appliedCount > 0 && (
+            <div>
+              <span>Custom: </span>
+              <span className="font-medium">{appliedCount} position(s)</span>
+            </div>
+          )}
         </div>
 
         {/* Mobile: Price */}
         <div className="md:hidden mb-3">
           <p className="text-sm text-gray-600">
-            {t('cart.unitPrice')}: {formatIDR(item.product.price)}
+            {t('cart.unitPrice')}: {formatIDR(unitTotal)}
           </p>
           <p className="text-lg font-bold text-primary">
             {formatIDR(itemTotal)}
@@ -97,7 +111,7 @@ export function CartItem({
       <div className="hidden md:flex flex-col items-end justify-between">
         <div className="text-right">
           <p className="text-sm text-gray-600 mb-1">
-            {formatIDR(item.product.price)} x {item.quantity}
+            {formatIDR(unitTotal)} x {item.quantity}
           </p>
           <p className="text-xl font-bold text-primary">
             {formatIDR(itemTotal)}

@@ -10,9 +10,6 @@ import { Badge } from '@/components/common/Badge';
 import { formatIDR } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/common/Button';
-import { QuickAddModal } from '@/components/products/QuickAddModal';
-import { useAuth } from '@/contexts/AuthContext';
-import { usePathname, useRouter } from 'next/navigation';
 
 export interface ProductCardProps {
   product: Product;
@@ -22,12 +19,7 @@ export function ProductCard({
   product,
 }: ProductCardProps) {
   const { t } = useLanguage();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const { user } = useAuth();
-  const router = useRouter();
-  const pathname = usePathname();
 
   return (
     <motion.div
@@ -40,9 +32,7 @@ export function ProductCard({
         <Link href={`/products/${product.slug}`}>
           <div className="relative aspect-square overflow-hidden bg-gray-100">
             <Image
-              src={
-                product.images[currentImageIndex] || product.images[0]
-              }
+              src={product.images[0]}
               alt={product.name}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -112,13 +102,11 @@ export function ProductCard({
           {/* Color options preview */}
           <div className="flex items-center gap-2 mb-4">
             {product.colors.slice(0, 5).map((color, index) => (
-              <button
+              <div
                 key={index}
                 className="w-6 h-6 rounded-full border-2 border-gray-200 hover:border-primary transition-colors"
                 style={{ backgroundColor: color.code }}
                 title={color.name}
-                onMouseEnter={() => setCurrentImageIndex(index % product.images.length)}
-                onMouseLeave={() => setCurrentImageIndex(0)}
               />
             ))}
             {product.colors.length > 5 && (
@@ -136,22 +124,6 @@ export function ProductCard({
                   {t('products.viewDetails') || 'View Details'}
                 </Button>
               </Link>
-              <Button
-                variant="primary"
-                size="sm"
-                className="flex-1"
-                onClick={() => {
-                  if (!user) {
-                    router.push(
-                      `/auth/sign-in?next=${encodeURIComponent(pathname || '/products')}`
-                    );
-                    return;
-                  }
-                  setQuickAddOpen(true);
-                }}
-              >
-                Add
-              </Button>
             </div>
           ) : (
             <button
@@ -163,12 +135,6 @@ export function ProductCard({
           )}
         </div>
       </div>
-
-      <QuickAddModal
-        product={product}
-        isOpen={quickAddOpen}
-        onClose={() => setQuickAddOpen(false)}
-      />
     </motion.div>
   );
 }

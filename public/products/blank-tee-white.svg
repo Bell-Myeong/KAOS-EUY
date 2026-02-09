@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#f3f4f6"/>
+    </linearGradient>
+    <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e5e7eb"/>
+    </linearGradient>
+    <linearGradient id="shadow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#000000" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="12"/>
+      <feOffset dx="0" dy="14" result="off"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.18"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="1200" rx="64" fill="url(#bg)"/>
+
+  <g filter="url(#softShadow)">
+    <!-- shirt body -->
+    <path
+      d="M330 260 L420 170 L520 230 L680 230 L780 170 L870 260 L805 355 L805 980 L395 980 L395 355 Z"
+      fill="url(#shirt)"
+      stroke="#d1d5db"
+      stroke-width="10"
+      stroke-linejoin="round"
+    />
+
+    <!-- sleeves -->
+    <path
+      d="M330 260 L235 420 L310 475 L395 355 Z"
+      fill="url(#shirt)"
+      stroke="#d1d5db"
+      stroke-width="10"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M870 260 L965 420 L890 475 L805 355 Z"
+      fill="url(#shirt)"
+      stroke="#d1d5db"
+      stroke-width="10"
+      stroke-linejoin="round"
+    />
+
+    <!-- collar -->
+    <path
+      d="M520 230 Q600 290 680 230"
+      fill="none"
+      stroke="#cbd5e1"
+      stroke-width="14"
+      stroke-linecap="round"
+    />
+
+    <!-- subtle inner shadow -->
+    <path
+      d="M395 355 L805 355 L805 980 L395 980 Z"
+      fill="url(#shadow)"
+      opacity="0.7"
+    />
+
+    <!-- blank print area hint -->
+    <rect x="470" y="420" width="260" height="320" rx="22" fill="#ffffff" opacity="0.35" stroke="#e5e7eb" stroke-width="6" stroke-dasharray="14 14"/>
+  </g>
+</svg>

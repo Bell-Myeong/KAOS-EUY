@@ -1,12 +1,19 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { CartItem, Product, Size, ProductColor } from '@/types';
+import type { CartItem, Product, Size, ProductColor, CartCustomization } from '@/types';
 
 interface CartState {
   items: CartItem[];
-  addItem: (product: Product, size: Size, color: ProductColor, quantity?: number) => void;
-  removeItem: (productId: string, size: Size, color: ProductColor) => void;
-  updateQuantity: (productId: string, size: Size, color: ProductColor, quantity: number) => void;
+  addItem: (input: {
+    product: Product;
+    size: Size;
+    color: ProductColor;
+    quantity: number;
+    customization: CartCustomization;
+    custom_fee_per_unit: number;
+  }) => void;
+  removeItem: (itemId: string) => void;
+  updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
   getTotal: () => number;
   getItemCount: () => number;
@@ -17,55 +24,48 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
 
-      addItem: (product, size, color, quantity = 1) => {
+      addItem: (input) => {
+        const id =
+          typeof crypto !== 'undefined' && 'randomUUID' in crypto
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
         set((state) => {
-          const existingItem = state.items.find(
-            (item) =>
-              item.product.id === product.id &&
-              item.size === size &&
-              item.color.code === color.code
-          );
-
-          if (existingItem) {
-            return {
-              items: state.items.map((item) =>
-                item === existingItem
-                  ? { ...item, quantity: item.quantity + quantity }
-                  : item
-              ),
-            };
-          }
-
           return {
-            items: [...state.items, { product, size, color, quantity }],
+            items: [
+              ...state.items,
+              {
+                id,
+                product: input.product,
+                size: input.size,
+                color: input.color,
+                quantity: input.quantity,
+                customization: input.customization,
+                custom_fee_per_unit: input.custom_fee_per_unit,
+              },
+            ],
           };
         });
       },
 
-      removeItem: (productId, size, color) => {
+      removeItem: (itemId) => {
         set((state) => ({
           items: state.items.filter(
             (item) =>
-              !(
-                item.product.id === productId &&
-                item.size === size &&
-                item.color.code === color.code
-              )
+              item.id !== itemId
           ),
         }));
       },
 
-      updateQuantity: (productId, size, color, quantity) => {
+      updateQuantity: (itemId, quantity) => {
         if (quantity <= 0) {
-          get().removeItem(productId, size, color);
+          get().removeItem(itemId);
           return;
         }
 
         set((state) => ({
           items: state.items.map((item) =>
-            item.product.id === productId &&
-            item.size === size &&
-            item.color.code === color.code
+            item.id === itemId
               ? { ...item, quantity }
               : item
           ),
@@ -78,7 +78,11 @@ export const useCartStore = create<CartState>()(
 
       getTotal: () => {
         const { items } = get();
-        return items.reduce((total, item) => total + item.product.price * item.quantity, 0);
+        return items.reduce(
+          (total, item) =>
+            total + (item.product.price + item.custom_fee_per_unit) * item.quantity,
+          0
+        );
       },
 
       getItemCount: () => {
@@ -88,6 +92,23 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: 'kaos-euy-cart',
+      version: 2,
+      migrate: (persisted) => {
+        const state = persisted as Partial<CartState> | undefined;
+        if (!state?.items?.length) return { items: [] };
+        const ok = state.items.every((it) => {
+          const anyIt = it as any;
+          return (
+            typeof anyIt.id === 'string' &&
+            anyIt.product &&
+            typeof anyIt.quantity === 'number' &&
+            typeof anyIt.custom_fee_per_unit === 'number' &&
+            anyIt.customization &&
+            Array.isArray(anyIt.customization.applied_positions)
+          );
+        });
+        return ok ? (state as any) : { items: [] };
+      },
     }
   )
 );

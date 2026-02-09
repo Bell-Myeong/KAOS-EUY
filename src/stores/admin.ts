@@ -1,61 +1,103 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { getSupabaseBrowserClient } from '@/lib/supabase/browser';
 
 interface AdminUser {
   id: string;
   email: string;
-  name: string;
-  role: 'admin' | 'staff';
+  name: string | null;
 }
 
 interface AdminState {
   user: AdminUser | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+  refresh: () => Promise<void>;
   login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
-// Demo credentials
-const DEMO_ADMIN = {
-  email: 'admin@kaoseuy.com',
-  password: 'admin123',
-  user: {
-    id: '1',
-    email: 'admin@kaoseuy.com',
-    name: 'Admin Kaos EUY',
-    role: 'admin' as const,
-  },
-};
+async function loadAdminUser() {
+  const supabase = getSupabaseBrowserClient();
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) throw sessionError;
 
-export const useAdminStore = create<AdminState>()(
-  persist(
-    (set) => ({
-      user: null,
-      isAuthenticated: false,
+  const sessionUser = sessionData.session?.user ?? null;
+  if (!sessionUser) return null;
 
-      login: async (email: string, password: string) => {
-        // Simulate API call delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+  const { data: profile, error: profileError } = await supabase
+    .from('users')
+    .select('id, email, name, is_admin')
+    .eq('id', sessionUser.id)
+    .single();
 
-        if (email === DEMO_ADMIN.email && password === DEMO_ADMIN.password) {
-          set({
-            user: DEMO_ADMIN.user,
-            isAuthenticated: true,
-          });
-          return true;
-        }
-        return false;
-      },
+  if (profileError) throw profileError;
+  if (!profile?.is_admin) {
+    await supabase.auth.signOut();
+    return null;
+  }
 
-      logout: () => {
-        set({
-          user: null,
-          isAuthenticated: false,
-        });
-      },
-    }),
-    {
-      name: 'kaos-euy-admin',
+  return {
+    id: profile.id,
+    email: profile.email ?? sessionUser.email ?? '',
+    name: profile.name ?? null,
+  } satisfies AdminUser;
+}
+
+export const useAdminStore = create<AdminState>((set) => ({
+  user: null,
+  isAuthenticated: false,
+  isLoading: true,
+  error: null,
+
+  refresh: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const adminUser = await loadAdminUser();
+      set({
+        user: adminUser,
+        isAuthenticated: Boolean(adminUser),
+        isLoading: false,
+        error: null,
+      });
+    } catch (e) {
+      set({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: e instanceof Error ? e.message : String(e),
+      });
     }
-  )
-);
+  },
+
+  login: async (email: string, password: string) => {
+    set({ isLoading: true, error: null });
+    const supabase = getSupabaseBrowserClient();
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      set({ isLoading: false, error: error.message });
+      return false;
+    }
+
+    try {
+      const adminUser = await loadAdminUser();
+      if (!adminUser) {
+        set({ user: null, isAuthenticated: false, isLoading: false, error: 'Admin access required' });
+        return false;
+      }
+
+      set({ user: adminUser, isAuthenticated: true, isLoading: false, error: null });
+      return true;
+    } catch (e) {
+      set({ user: null, isAuthenticated: false, isLoading: false, error: e instanceof Error ? e.message : String(e) });
+      return false;
+    }
+  },
+
+  logout: async () => {
+    const supabase = getSupabaseBrowserClient();
+    await supabase.auth.signOut();
+    set({ user: null, isAuthenticated: false, isLoading: false, error: null });
+  },
+}));

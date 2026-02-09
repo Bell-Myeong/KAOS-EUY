@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Move, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
@@ -26,8 +26,9 @@ const designAreaBounds: Record<CustomPosition, { top: number; left: number; widt
   rightArm: { top: 15, left: 75, width: 20, height: 30 },
 };
 
-export function CustomVisualizer({ baseColor }: CustomVisualizerProps) {
+export function CustomVisualizer({ baseColor, productImage }: CustomVisualizerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [baseImageError, setBaseImageError] = useState(false);
   const {
     activePosition,
     setActivePosition,
@@ -52,6 +53,13 @@ export function CustomVisualizer({ baseColor }: CustomVisualizerProps) {
 
   const currentPart = getCurrentPart();
   const bounds = designAreaBounds[activePosition];
+
+  const baseSrc = typeof productImage === 'string' ? productImage.trim() : '';
+  const showProductBase = Boolean(baseSrc) && !baseImageError;
+
+  useEffect(() => {
+    setBaseImageError(false);
+  }, [baseSrc]);
 
   const handleDragEnd = (_: unknown, info: { offset: { x: number; y: number } }) => {
     if (!containerRef.current) return;
@@ -84,44 +92,59 @@ export function CustomVisualizer({ baseColor }: CustomVisualizerProps) {
         className="relative aspect-square rounded-2xl overflow-hidden"
         style={{ backgroundColor: baseColor || '#f3f4f6' }}
       >
-        {/* Base T-shirt illustration */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <svg
-            viewBox="0 0 200 200"
-            className="w-4/5 h-4/5"
-            fill="currentColor"
-            style={{ color: baseColor || '#e5e7eb' }}
-          >
-            {/* Simple T-shirt shape */}
-            <path
-              d="M40 50 L60 30 L80 45 L120 45 L140 30 L160 50 L145 65 L145 170 L55 170 L55 65 Z"
+        {/* Base product image (preferred) or fallback illustration */}
+        {showProductBase ? (
+          <>
+            <div className="absolute inset-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={baseSrc}
+                alt="Product base"
+                className="w-full h-full object-contain"
+                onError={() => setBaseImageError(true)}
+              />
+            </div>
+            <div className="absolute inset-0 bg-white/10 pointer-events-none" />
+          </>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <svg
+              viewBox="0 0 200 200"
+              className="w-4/5 h-4/5"
               fill="currentColor"
-              stroke="#d1d5db"
-              strokeWidth="2"
-            />
-            {/* Left sleeve */}
-            <path
-              d="M40 50 L20 80 L35 90 L55 65 Z"
-              fill="currentColor"
-              stroke="#d1d5db"
-              strokeWidth="2"
-            />
-            {/* Right sleeve */}
-            <path
-              d="M160 50 L180 80 L165 90 L145 65 Z"
-              fill="currentColor"
-              stroke="#d1d5db"
-              strokeWidth="2"
-            />
-            {/* Collar */}
-            <path
-              d="M80 45 Q100 55 120 45"
-              fill="none"
-              stroke="#d1d5db"
-              strokeWidth="2"
-            />
-          </svg>
-        </div>
+              style={{ color: baseColor || '#e5e7eb' }}
+            >
+              {/* Simple T-shirt shape */}
+              <path
+                d="M40 50 L60 30 L80 45 L120 45 L140 30 L160 50 L145 65 L145 170 L55 170 L55 65 Z"
+                fill="currentColor"
+                stroke="#d1d5db"
+                strokeWidth="2"
+              />
+              {/* Left sleeve */}
+              <path
+                d="M40 50 L20 80 L35 90 L55 65 Z"
+                fill="currentColor"
+                stroke="#d1d5db"
+                strokeWidth="2"
+              />
+              {/* Right sleeve */}
+              <path
+                d="M160 50 L180 80 L165 90 L145 65 Z"
+                fill="currentColor"
+                stroke="#d1d5db"
+                strokeWidth="2"
+              />
+              {/* Collar */}
+              <path
+                d="M80 45 Q100 55 120 45"
+                fill="none"
+                stroke="#d1d5db"
+                strokeWidth="2"
+              />
+            </svg>
+          </div>
+        )}
 
         {/* Design Area Indicator */}
         <div
@@ -136,7 +159,7 @@ export function CustomVisualizer({ baseColor }: CustomVisualizerProps) {
 
         {/* Custom Design Overlay - Draggable */}
         <AnimatePresence mode="wait">
-          {currentPart.previewUrl && (
+          {currentPart.image_url && (
             <motion.div
               key={`${activePosition}-image`}
               initial={{ opacity: 0, scale: 0.8 }}
@@ -165,7 +188,7 @@ export function CustomVisualizer({ baseColor }: CustomVisualizerProps) {
                 }}
               >
                 <Image
-                  src={currentPart.previewUrl}
+                  src={currentPart.image_url}
                   alt="Custom design"
                   fill
                   className="object-contain pointer-events-none"
@@ -181,7 +204,7 @@ export function CustomVisualizer({ baseColor }: CustomVisualizerProps) {
         </AnimatePresence>
 
         {/* Text Overlay - Draggable */}
-        {currentPart.text && !currentPart.previewUrl && (
+        {currentPart.text && !currentPart.image_url && (
           <motion.div
             drag
             dragMomentum={false}
@@ -209,7 +232,7 @@ export function CustomVisualizer({ baseColor }: CustomVisualizerProps) {
         </div>
 
         {/* Drag instruction */}
-        {(currentPart.previewUrl || currentPart.text) && (
+        {(currentPart.image_url || currentPart.text) && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-xs flex items-center gap-1">
             <Move className="w-3 h-3" />
             Drag to reposition
@@ -218,7 +241,7 @@ export function CustomVisualizer({ baseColor }: CustomVisualizerProps) {
       </div>
 
       {/* Zoom Controls */}
-      {(currentPart.previewUrl || currentPart.text) && (
+      {(currentPart.image_url || currentPart.text) && (
         <div className="flex items-center justify-center gap-2">
           <button
             onClick={() => handleZoom(-0.1)}
@@ -252,7 +275,7 @@ export function CustomVisualizer({ baseColor }: CustomVisualizerProps) {
         {positions.map((pos) => {
           const part = pos === 'front' ? front : pos === 'back' ? back : pos === 'leftArm' ? leftArm : rightArm;
           const isActive = activePosition === pos;
-          const hasContent = part.applied || part.previewUrl || part.text;
+          const hasContent = part.applied || part.image_url || part.text;
 
           return (
             <button

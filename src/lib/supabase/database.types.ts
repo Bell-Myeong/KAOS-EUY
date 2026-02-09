@@ -62,7 +62,6 @@ export type Database = {
           description: string | null;
           price: number;
           images: string[];
-          category: 'tshirt' | 'hoodie' | 'totebag' | 'other';
           sizes: string[];
           colors: Json;
           in_stock: boolean;
@@ -77,7 +76,6 @@ export type Database = {
           description?: string | null;
           price: number;
           images?: string[];
-          category: 'tshirt' | 'hoodie' | 'totebag' | 'other';
           sizes?: string[];
           colors?: Json;
           in_stock?: boolean;
@@ -92,7 +90,6 @@ export type Database = {
           description?: string | null;
           price?: number;
           images?: string[];
-          category?: 'tshirt' | 'hoodie' | 'totebag' | 'other';
           sizes?: string[];
           colors?: Json;
           in_stock?: boolean;
@@ -154,37 +151,52 @@ export type Database = {
       orders: {
         Row: {
           id: string;
-          user_id: string;
+          user_id: string | null;
           status: Database['public']['Enums']['order_status'];
           currency: string;
           subtotal: number;
           shipping_fee: number;
           total: number;
           custom_order_id: string | null;
+          guest_email: string | null;
+          guest_name: string | null;
+          guest_phone: string | null;
+          guest_shipping: Json | null;
+          lookup_token: string;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
-          user_id: string;
-          status?: Database['public']['Enums']['order_status'];
-          currency: string;
-          subtotal: number;
-          shipping_fee?: number;
-          total: number;
-          custom_order_id?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
+          user_id?: string | null;
           status?: Database['public']['Enums']['order_status'];
           currency?: string;
           subtotal?: number;
           shipping_fee?: number;
           total?: number;
           custom_order_id?: string | null;
+          guest_email?: string | null;
+          guest_name?: string | null;
+          guest_phone?: string | null;
+          guest_shipping?: Json | null;
+          lookup_token?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          status?: Database['public']['Enums']['order_status'];
+          currency?: string;
+          subtotal?: number;
+          shipping_fee?: number;
+          total?: number;
+          custom_order_id?: string | null;
+          guest_email?: string | null;
+          guest_name?: string | null;
+          guest_phone?: string | null;
+          guest_shipping?: Json | null;
+          lookup_token?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -214,6 +226,8 @@ export type Database = {
           color_name: string;
           quantity: number;
           unit_price: number;
+          custom_fee: number;
+          customization: Json | null;
           line_total: number;
           created_at: string;
         };
@@ -227,6 +241,8 @@ export type Database = {
           color_name: string;
           quantity: number;
           unit_price: number;
+          custom_fee?: number;
+          customization?: Json | null;
           line_total: number;
           created_at?: string;
         };
@@ -240,6 +256,8 @@ export type Database = {
           color_name?: string;
           quantity?: number;
           unit_price?: number;
+          custom_fee?: number;
+          customization?: Json | null;
           line_total?: number;
           created_at?: string;
         };
@@ -312,7 +330,20 @@ export type Database = {
       };
     };
     Views: { [_ in never]: never };
-    Functions: { [_ in never]: never };
+    Functions: {
+      create_order_guest: {
+        Args: { p_items: Json; p_customer: Json; p_shipping: Json };
+        Returns: { order_id: string; lookup_token: string }[];
+      };
+      get_order_guest: {
+        Args: { p_order_id: string; p_email: string; p_token: string };
+        Returns: Json;
+      };
+      is_admin: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+    };
     CompositeTypes: { [_ in never]: never };
   };
 };

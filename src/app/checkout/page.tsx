@@ -3,91 +3,35 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CreditCard } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { Button } from '@/components/common/Button';
 import { Separator } from '@/components/common/Separator';
 import { EmptyCart } from '@/components/cart/EmptyCart';
-import { useAuth } from '@/contexts/AuthContext';
-import { useCartItems } from '@/lib/hooks/useCart';
-import { useCreateOrderFromCart } from '@/lib/hooks/useOrders';
+import { useCartStore } from '@/stores/cart';
+import { useCreateGuestOrder } from '@/lib/hooks/useGuestOrders';
 import { formatIDR } from '@/lib/utils';
-import { isForbiddenError } from '@/lib/api/errors';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { user, isLoading: authLoading } = useAuth();
-  const { data, isLoading, error } = useCartItems();
-  const createOrder = useCreateOrderFromCart();
+  const items = useCartStore((s) => s.items);
+  const clearCart = useCartStore((s) => s.clearCart);
+  const createOrder = useCreateGuestOrder();
 
-  const items = data ?? [];
-  const subtotal = items.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
-    0
-  );
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [notes, setNotes] = useState('');
+
+  const subtotal = useMemo(() => {
+    return items.reduce(
+      (sum, item) =>
+        sum + (item.product.price + item.custom_fee_per_unit) * item.quantity,
+      0
+    );
+  }, [items]);
   const shippingFee = 0;
   const total = subtotal + shippingFee;
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="container mx-auto px-4 animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-56 mb-8" />
-          <div className="bg-white rounded-xl border border-gray-200 p-6 h-80" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="container mx-auto px-4">
-          <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-6 text-center">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CreditCard className="w-8 h-8 text-primary" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Sign in required
-            </h1>
-            <p className="text-gray-600 mb-6">
-              Please sign in to place an order.
-            </p>
-            <Link href="/auth/sign-in?next=%2Fcheckout">
-              <Button fullWidth>Sign in</Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="container mx-auto px-4 animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-56 mb-8" />
-          <div className="grid lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 h-96" />
-            <div className="bg-white rounded-xl border border-gray-200 h-64" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="container mx-auto px-4">
-          <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">
-              {isForbiddenError(error) ? '403 Forbidden' : 'Failed to load cart'}
-            </h2>
-            <p className="text-gray-600 text-sm">{String(error)}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (items.length === 0) {
     return (
@@ -107,27 +51,106 @@ export default function CheckoutPage() {
         </h1>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Items</h2>
-            <div className="space-y-3">
-              {items.map((item) => (
-                <div
-                  key={`${item.product.id}-${item.size}-${item.color.code}`}
-                  className="flex items-center justify-between gap-4"
-                >
-                  <div className="min-w-0">
-                    <p className="font-medium text-gray-900 truncate">
-                      {item.product.name}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {item.color.name} / {item.size} × {item.quantity}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Contact</h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Email
+                  </label>
+                  <input
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    type="email"
+                    required
+                    placeholder="you@example.com"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Name (optional)
+                  </label>
+                  <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    type="text"
+                    placeholder="Your name"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Phone (optional)
+                  </label>
+                  <input
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    type="tel"
+                    placeholder="+62 ..."
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Shipping</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Address
+                  </label>
+                  <textarea
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    required
+                    placeholder="Full address"
+                    rows={4}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Notes (optional)
+                  </label>
+                  <input
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    type="text"
+                    placeholder="Delivery instructions"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Items</h2>
+              <div className="space-y-3">
+                {items.map((item) => (
+                  <div
+                    key={`${item.product.id}-${item.size}-${item.color.code}`}
+                    className="flex items-center justify-between gap-4"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-medium text-gray-900 truncate">
+                        {item.product.name}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {item.color.name} / {item.size} × {item.quantity}
+                      </p>
+                    </div>
+                    <p className="font-semibold text-gray-900">
+                      {formatIDR(
+                        (item.product.price + item.custom_fee_per_unit) *
+                          item.quantity
+                      )}
                     </p>
                   </div>
-                  <p className="font-semibold text-gray-900">
-                    {formatIDR(item.product.price * item.quantity)}
-                  </p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
 
@@ -166,10 +189,22 @@ export default function CheckoutPage() {
               fullWidth
               size="lg"
               loading={createOrder.isPending}
-              disabled={createOrder.isPending}
+              disabled={createOrder.isPending || !email || !address}
               onClick={async () => {
-                const orderId = await createOrder.mutateAsync();
-                router.push(`/orders/${orderId}`);
+                const { orderId, lookupToken } = await createOrder.mutateAsync({
+                  items,
+                  customer: { email, name, phone },
+                  shipping: { full_address: address, notes },
+                });
+
+                clearCart();
+                router.push(
+                  `/checkout/thank-you?order_id=${encodeURIComponent(
+                    orderId
+                  )}&token=${encodeURIComponent(lookupToken)}&email=${encodeURIComponent(
+                    email
+                  )}`
+                );
               }}
             >
               Place order
@@ -186,4 +221,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-

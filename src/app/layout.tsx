@@ -4,7 +4,6 @@ import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { LanguageProvider } from '@/contexts/LanguageContext';
-import { AuthProvider } from '@/contexts/AuthContext';
 import { Providers } from '@/app/providers';
 
 const poppins = Poppins({
@@ -45,13 +44,11 @@ export default function RootLayout({
         className={`${poppins.variable} ${plusJakarta.variable} ${pacifico.variable} font-body antialiased flex flex-col min-h-screen`}
       >
         <LanguageProvider>
-          <AuthProvider>
-            <Providers>
-              <Header />
-              <main className="flex-grow">{children}</main>
-              <Footer />
-            </Providers>
-          </AuthProvider>
+          <Providers>
+            <Header />
+            <main className="flex-grow">{children}</main>
+            <Footer />
+          </Providers>
         </LanguageProvider>
       </body>
     </html>

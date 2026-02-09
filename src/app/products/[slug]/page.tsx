@@ -1,26 +1,28 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useParams, usePathname, useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ProductColor, Size } from '@/types';
 import { useProducts } from '@/lib/hooks/useProducts';
-import { useAuth } from '@/contexts/AuthContext';
-import { useAddToCart } from '@/lib/hooks/useCart';
 import { Button } from '@/components/common/Button';
 import { ColorSelector } from '@/components/products/ColorSelector';
 import { SizeSelector } from '@/components/products/SizeSelector';
 import { QuantitySelector } from '@/components/products/QuantitySelector';
 import { formatIDR } from '@/lib/utils';
+import { useCartStore } from '@/stores/cart';
+import { PositionSelector } from '@/components/custom/PositionSelector';
+import { CustomVisualizer } from '@/components/custom/CustomVisualizer';
+import { DesignUploader } from '@/components/custom/DesignUploader';
+import { useCustomDesignStore } from '@/stores/customDesign';
 
 export default function ProductDetailPage() {
   const params = useParams<{ slug: string }>();
   const slug = params?.slug;
 
   const router = useRouter();
-  const pathname = usePathname();
-  const { user } = useAuth();
+  const addItem = useCartStore((s) => s.addItem);
 
   const { data, isLoading, error } = useProducts({ slug });
   const product = data?.[0];
@@ -36,8 +38,13 @@ export default function ProductDetailPage() {
   const [size, setSize] = useState<Size | undefined>(defaultSize);
   const [color, setColor] = useState<ProductColor | undefined>(defaultColor);
   const [quantity, setQuantity] = useState(1);
+  const [isAdding, setIsAdding] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showCustomizer, setShowCustomizer] = useState(false);
 
-  const addToCart = useAddToCart();
+  const resetAllDesign = useCustomDesignStore((s) => s.resetAll);
+  const getAppliedParts = useCustomDesignStore((s) => s.getAppliedParts);
+  const getCustomPrice = useCustomDesignStore((s) => s.getCustomPrice);
 
   useEffect(() => {
     if (!size && defaultSize) setSize(defaultSize);
@@ -46,6 +53,11 @@ export default function ProductDetailPage() {
   useEffect(() => {
     if (!color && defaultColor) setColor(defaultColor);
   }, [defaultColor, color]);
+
+  useEffect(() => {
+    resetAllDesign();
+    setShowCustomizer(false);
+  }, [resetAllDesign, product?.id]);
 
   if (isLoading) {
     return (
@@ -94,7 +106,14 @@ export default function ProductDetailPage() {
     );
   }
 
+  const appliedParts = getAppliedParts();
+  const customFeePerUnit = getCustomPrice();
+  const unitTotal = product.price + customFeePerUnit;
+  const lineTotal = unitTotal * quantity;
+
   const canAdd = Boolean(product.in_stock && size && color && quantity > 0);
+  const images = product.images ?? [];
+  const mainImage = images[currentImageIndex] ?? images[0];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -107,13 +126,58 @@ export default function ProductDetailPage() {
           <div className="bg-white rounded-2xl overflow-hidden border border-gray-200">
             <div className="relative aspect-square bg-gray-100">
               <Image
-                src={product.images?.[0] ?? 'https://placehold.co/800x800/png'}
+                src={mainImage ?? 'https://placehold.co/800x800/png'}
                 alt={product.name}
                 fill
                 className="object-cover"
                 priority
               />
             </div>
+
+            {images.length > 1 ? (
+              <div className="p-4 border-t border-gray-200">
+                <p className="text-xs font-semibold text-gray-700 mb-2">Examples</p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentImageIndex(0)}
+                    className={`px-3 h-16 rounded-lg border text-sm font-medium transition-colors ${
+                      currentImageIndex === 0
+                        ? 'border-primary ring-2 ring-primary/20 text-primary bg-primary/5'
+                        : 'border-gray-200 hover:border-gray-300 text-gray-700 bg-white'
+                    }`}
+                    aria-label="View main image"
+                  >
+                    Main
+                  </button>
+                  {images.slice(1).map((src, idx) => {
+                    const realIndex = idx + 1;
+                    const active = currentImageIndex === realIndex;
+                    return (
+                      <button
+                        key={`${product.slug}-thumb-${realIndex}`}
+                        type="button"
+                        onClick={() => setCurrentImageIndex(realIndex)}
+                        className={`relative w-16 h-16 rounded-lg overflow-hidden border transition-colors ${
+                          active
+                            ? 'border-primary ring-2 ring-primary/20'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        aria-label={`View image ${realIndex + 1}`}
+                      >
+                        <Image
+                          src={src}
+                          alt={`${product.name} example ${realIndex + 1}`}
+                          fill
+                          sizes="64px"
+                          className="object-cover"
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
           </div>
 
           <div className="space-y-6">
@@ -145,42 +209,91 @@ export default function ProductDetailPage() {
 
             <QuantitySelector value={quantity} onChange={setQuantity} />
 
-            {!user ? (
-              <Button
-                fullWidth
-                onClick={() => {
-                  router.push(
-                    `/auth/sign-in?next=${encodeURIComponent(pathname || '/products')}`
-                  );
-                }}
-              >
-                Sign in to add to cart
-              </Button>
-            ) : (
-              <Button
-                fullWidth
-                disabled={!canAdd || addToCart.isPending}
-                loading={addToCart.isPending}
-                onClick={async () => {
-                  if (!size || !color) return;
-                  await addToCart.mutateAsync({
-                    productId: product.id,
+            <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-semibold text-gray-900">Customization</p>
+                  <p className="text-sm text-gray-600">
+                    +{formatIDR(25000)}/position ({appliedParts.length} selected)
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant={showCustomizer ? 'outline' : 'primary'}
+                  size="sm"
+                  onClick={() => setShowCustomizer((v) => !v)}
+                >
+                  {showCustomizer ? 'Hide' : 'Customize'}
+                </Button>
+              </div>
+
+              {showCustomizer && (
+                <div className="space-y-6">
+                  <CustomVisualizer
+                    baseColor="#ffffff"
+                    productImage="/products/blank-tee-white.svg"
+                  />
+                  <PositionSelector />
+                  <DesignUploader />
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-xl border border-gray-200 bg-white p-5">
+              <div className="flex items-center justify-between text-sm text-gray-700">
+                <span>Unit</span>
+                <span className="font-semibold">{formatIDR(unitTotal)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm text-gray-700 mt-1">
+                <span>Customization</span>
+                <span className="font-semibold">{formatIDR(customFeePerUnit)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm text-gray-700 mt-1">
+                <span>Quantity</span>
+                <span className="font-semibold">× {quantity}</span>
+              </div>
+              <div className="flex items-center justify-between mt-3">
+                <span className="text-base font-semibold text-gray-900">Total</span>
+                <span className="text-xl font-bold text-primary">{formatIDR(lineTotal)}</span>
+              </div>
+            </div>
+
+            <Button
+              fullWidth
+              disabled={!canAdd || isAdding}
+              loading={isAdding}
+              onClick={async () => {
+                if (!size || !color) return;
+                setIsAdding(true);
+                try {
+                   const design = useCustomDesignStore.getState();
+                   const parts = {
+                     front: design.front,
+                     back: design.back,
+                     leftArm: design.leftArm,
+                     rightArm: design.rightArm,
+                   };
+
+                  addItem({
+                    product,
                     size,
                     color,
                     quantity,
+                    customization: {
+                      parts,
+                      applied_positions: design.getAppliedParts(),
+                    },
+                    custom_fee_per_unit: design.getCustomPrice(),
                   });
+                  resetAllDesign();
                   router.push('/cart');
-                }}
-              >
-                Add to cart
-              </Button>
-            )}
-
-            {addToCart.error && (
-              <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                {String(addToCart.error)}
-              </div>
-            )}
+                } finally {
+                  setIsAdding(false);
+                }
+              }}
+            >
+              Custom & add to cart
+            </Button>
           </div>
         </div>
       </div>

@@ -222,19 +222,39 @@ export interface Product {
   description: string;
   price: number;
   images: string[];
-  category: ProductCategory;
   sizes: Size[];
   colors: ProductColor[];
   in_stock: boolean;
   is_customizable: boolean;
 }
 
+export type CustomPosition = 'front' | 'back' | 'leftArm' | 'rightArm';
+
+export interface CartCustomizationPart {
+  applied: boolean;
+  image_url?: string | null;
+  text: string;
+  position: {
+    x: number;
+    y: number;
+  };
+  scale: number;
+}
+
+export interface CartCustomization {
+  parts: Record<CustomPosition, CartCustomizationPart>;
+  applied_positions: CustomPosition[];
+}
+
 // Cart Types
 export interface CartItem {
+  id: string;
   product: Product;
   quantity: number;
   size: Size;
   color: ProductColor;
+  customization: CartCustomization;
+  custom_fee_per_unit: number;
 }
 
 export interface Cart {

@@ -1,252 +1,227 @@
 'use client';
 
-import { Suspense, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import {
-  CheckCircle,
-  Package,
-  Truck,
-  Home,
-  MessageCircle,
-  Copy,
-  Check
-} from 'lucide-react';
-import { useOrderStore } from '@/stores/order';
+import { Suspense, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { CheckCircle, Copy, Check, Search } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Separator } from '@/components/common/Separator';
+import { useGuestOrderDetail } from '@/lib/hooks/useGuestOrders';
 import { formatIDR } from '@/lib/utils';
-import { fadeInUp, staggerContainer } from '@/lib/animations';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { CustomizationDetails } from '@/components/orders/CustomizationDetails';
 
-const steps = [
-  { icon: CheckCircle, key: 'step1' },
-  { icon: Package, key: 'step2' },
-  { icon: Truck, key: 'step3' },
-  { icon: Home, key: 'step4' },
-];
+function ThankYouInner() {
+  const params = useSearchParams();
+  const orderId = params.get('order_id');
+  const token = params.get('token');
+  const email = params.get('email');
 
-function ThankYouContent() {
-  const searchParams = useSearchParams();
-  const orderNumber = searchParams.get('order');
-  const { t } = useLanguage();
-  const { currentOrder, getOrderByNumber } = useOrderStore();
-  const [copied, setCopied] = useState(false);
+  const { data, isLoading, error } = useGuestOrderDetail({
+    orderId,
+    token,
+    email,
+  });
 
-  const order = currentOrder || (orderNumber ? getOrderByNumber(orderNumber) : null);
+  const [copied, setCopied] = useState<null | 'order' | 'token'>(null);
 
-  const handleCopyOrderNumber = () => {
-    if (order?.orderNumber) {
-      navigator.clipboard.writeText(order.orderNumber);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+  const order = data?.order ?? null;
+  const items = data?.items ?? [];
+
+  const createdAt = useMemo(() => {
+    const v = (order as any)?.created_at;
+    return typeof v === 'string' ? new Date(v) : null;
+  }, [order]);
+
+  const subtotal = Number((order as any)?.subtotal ?? 0);
+  const shippingFee = Number((order as any)?.shipping_fee ?? 0);
+  const total = Number((order as any)?.total ?? 0);
+
+  const copy = async (kind: 'order' | 'token', value: string) => {
+    await navigator.clipboard.writeText(value);
+    setCopied(kind);
+    setTimeout(() => setCopied(null), 1500);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  if (!order) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Order Not Found</h1>
-          <Link href="/">
-            <Button variant="primary">{t('thankYou.continueShopping')}</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-4">
-        <motion.div
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-          className="max-w-3xl mx-auto"
-        >
-          {/* Success Header */}
-          <motion.div
-            variants={fadeInUp}
-            className="text-center mb-8"
-          >
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', duration: 0.5 }}
-              className="w-24 h-24 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center"
-            >
-              <CheckCircle className="w-12 h-12 text-green-600" />
-            </motion.div>
-
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              {t('thankYou.title')}
-            </h1>
-            <p className="text-gray-600 text-lg">
-              {t('thankYou.subtitle')}
-            </p>
-          </motion.div>
-
-          {/* Order Info Card */}
-          <motion.div
-            variants={fadeInUp}
-            className="bg-white rounded-lg border border-gray-200 p-6 mb-8"
-          >
-            <div className="grid md:grid-cols-3 gap-6 text-center md:text-left">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">{t('thankYou.orderNumber')}</p>
-                <div className="flex items-center justify-center md:justify-start gap-2">
-                  <p className="text-lg font-bold text-primary">{order.orderNumber}</p>
-                  <button
-                    onClick={handleCopyOrderNumber}
-                    className="p-1 hover:bg-gray-100 rounded transition-colors"
-                    title="Copy"
-                  >
-                    {copied ? (
-                      <Check className="w-4 h-4 text-green-600" />
-                    ) : (
-                      <Copy className="w-4 h-4 text-gray-400" />
-                    )}
-                  </button>
-                </div>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">{t('thankYou.orderDate')}</p>
-                <p className="text-lg font-semibold text-gray-900">
-                  {formatDate(order.createdAt)}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">{t('thankYou.estimatedDelivery')}</p>
-                <p className="text-lg font-semibold text-gray-900">
-                  {t('thankYou.daysFromNow')}
-                </p>
-              </div>
-            </div>
-
-            <Separator className="my-6" />
-
-            {/* Order Summary */}
-            <div className="space-y-3">
-              <div className="flex justify-between text-gray-600">
-                <span>Subtotal ({order.items.length} items)</span>
-                <span>{formatIDR(order.subtotal)}</span>
-              </div>
-              <div className="flex justify-between text-gray-600">
-                <span>{t('checkout.summary.shipping')}</span>
-                <span>{order.shippingCost === 0 ? t('checkout.summary.free') : formatIDR(order.shippingCost)}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between items-center">
-                <span className="text-lg font-semibold">{t('checkout.summary.total')}</span>
-                <span className="text-2xl font-bold text-primary">{formatIDR(order.total)}</span>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* What's Next */}
-          <motion.div
-            variants={fadeInUp}
-            className="bg-white rounded-lg border border-gray-200 p-6 mb-8"
-          >
-            <h2 className="text-xl font-bold text-gray-900 mb-6 text-center">
-              {t('thankYou.whatNext')}
-            </h2>
-
-            <div className="grid md:grid-cols-4 gap-4">
-              {steps.map((step, index) => {
-                const Icon = step.icon;
-                const stepTitle = t(`thankYou.${step.key}.title`);
-                const stepDescription = t(`thankYou.${step.key}.description`);
-                return (
-                  <motion.div
-                    key={step.key}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 + index * 0.1 }}
-                    className="text-center"
-                  >
-                    <div className="relative">
-                      <div className={`w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center ${
-                        index === 0 ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'
-                      }`}>
-                        <Icon className="w-6 h-6" />
-                      </div>
-                      {index < steps.length - 1 && (
-                        <div className="hidden md:block absolute top-7 left-[60%] w-[80%] h-0.5 bg-gray-200" />
-                      )}
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-1">{stepTitle}</h3>
-                    <p className="text-sm text-gray-500">{stepDescription}</p>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </motion.div>
-
-          {/* Need Help */}
-          <motion.div
-            variants={fadeInUp}
-            className="bg-primary/5 rounded-lg border border-primary/20 p-6 mb-8"
-          >
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="text-center md:text-left">
-                <h3 className="font-bold text-gray-900 mb-1">{t('thankYou.needHelp')}</h3>
-                <p className="text-gray-600">{t('thankYou.contactUs')}</p>
-              </div>
-              <a
-                href="https://wa.me/6281234567890"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button variant="primary" leftIcon={MessageCircle}>
-                  {t('thankYou.whatsappButton')}
-                </Button>
-              </a>
-            </div>
-          </motion.div>
-
-          {/* Actions */}
-          <motion.div
-            variants={fadeInUp}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
-          >
-            <Link href="/products">
-              <Button variant="primary" size="lg" fullWidth>
-                {t('thankYou.continueShopping')}
-              </Button>
-            </Link>
-          </motion.div>
-        </motion.div>
-      </div>
-    </div>
-  );
-}
-
-function LoadingFallback() {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto">
-          <div className="animate-pulse">
-            <div className="w-24 h-24 mx-auto mb-6 bg-gray-200 rounded-full"></div>
-            <div className="h-8 bg-gray-200 rounded w-48 mx-auto mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-64 mx-auto mb-8"></div>
-            <div className="bg-white rounded-lg p-6 mb-8">
-              <div className="h-32 bg-gray-100 rounded"></div>
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 mx-auto mb-5 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-10 h-10 text-green-600" />
             </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              Order received
+            </h1>
+            <p className="text-gray-600">
+              Save your Order ID and Lookup Token to track your order.
+            </p>
           </div>
+
+          {!orderId || !token || !email ? (
+            <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
+              <p className="font-semibold text-gray-900 mb-2">Missing receipt info</p>
+              <p className="text-sm text-gray-600">
+                Please return to checkout and place the order again.
+              </p>
+              <div className="mt-4">
+                <Link href="/checkout">
+                  <Button>Back to checkout</Button>
+                </Link>
+              </div>
+            </div>
+          ) : isLoading ? (
+            <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
+              <div className="h-6 bg-gray-200 rounded w-56 mb-3" />
+              <div className="h-4 bg-gray-200 rounded w-full mb-2" />
+              <div className="h-4 bg-gray-200 rounded w-2/3" />
+            </div>
+          ) : error ? (
+            <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
+              <p className="font-semibold text-gray-900 mb-2">Failed to load order</p>
+              <p className="text-sm text-gray-600">{String(error)}</p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Order ID</p>
+                  <div className="flex items-center gap-2">
+                    <code className="text-sm font-semibold text-primary break-all">
+                      {orderId}
+                    </code>
+                    <button
+                      onClick={() => copy('order', orderId)}
+                      className="p-1 hover:bg-gray-100 rounded"
+                      title="Copy"
+                    >
+                      {copied === 'order' ? (
+                        <Check className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <Copy className="w-4 h-4 text-gray-400" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Lookup Token</p>
+                  <div className="flex items-center gap-2">
+                    <code className="text-sm font-semibold text-primary break-all">
+                      {token}
+                    </code>
+                    <button
+                      onClick={() => copy('token', token)}
+                      className="p-1 hover:bg-gray-100 rounded"
+                      title="Copy"
+                    >
+                      {copied === 'token' ? (
+                        <Check className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <Copy className="w-4 h-4 text-gray-400" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <Separator className="my-6" />
+
+              <div className="text-sm text-gray-700 space-y-1">
+                <p>
+                  <span className="font-semibold">Email:</span> {email}
+                </p>
+                <p>
+                  <span className="font-semibold">Placed:</span>{' '}
+                  {createdAt ? createdAt.toLocaleString() : '-'}
+                </p>
+                <p>
+                  <span className="font-semibold">Status:</span>{' '}
+                  {String((order as any)?.status ?? 'pending')}
+                </p>
+              </div>
+
+              <Separator className="my-6" />
+
+              <div className="space-y-2">
+                {items.map((it: any, idx: number) => (
+                  <div key={it?.id ?? idx} className="flex justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="font-medium text-gray-900 truncate">
+                        {String(it?.product_name ?? 'Item')}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        {String(it?.color_name ?? '')} / {String(it?.size ?? '')} ×{' '}
+                        {String(it?.quantity ?? 1)}
+                      </p>
+                      {Number(it?.custom_fee ?? 0) > 0 && (
+                        <p className="text-xs text-gray-600">
+                          Custom +{formatIDR(Number(it?.custom_fee ?? 0))}
+                        </p>
+                      )}
+                      <div className="mt-2">
+                        <details className="group">
+                          <summary className="cursor-pointer text-xs text-primary hover:underline list-none">
+                            <span className="group-open:hidden">View customization</span>
+                            <span className="hidden group-open:inline">Hide customization</span>
+                          </summary>
+                          <div className="mt-2">
+                            <CustomizationDetails
+                              customization={it?.customization}
+                              downloadName={
+                                orderId
+                                  ? `customization-${orderId}-${String(it?.id ?? idx)}.json`
+                                  : undefined
+                              }
+                              variant="customer"
+                            />
+                          </div>
+                        </details>
+                      </div>
+                    </div>
+                    <p className="font-semibold text-gray-900">
+                      {formatIDR(Number(it?.line_total ?? 0))}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <Separator className="my-6" />
+
+              <div className="space-y-2 text-gray-700">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span>{formatIDR(subtotal)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Shipping</span>
+                  <span>{shippingFee === 0 ? 'Free' : formatIDR(shippingFee)}</span>
+                </div>
+                <div className="flex justify-between font-semibold text-gray-900">
+                  <span>Total</span>
+                  <span className="text-primary">{formatIDR(total)}</span>
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                <Link
+                  className="flex-1"
+                  href={`/order-lookup?order_id=${encodeURIComponent(
+                    orderId
+                  )}&token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`}
+                >
+                  <Button fullWidth leftIcon={Search}>
+                    Track order
+                  </Button>
+                </Link>
+                <Link className="flex-1" href="/products">
+                  <Button variant="outline" fullWidth>
+                    Continue shopping
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -255,8 +230,20 @@ function LoadingFallback() {
 
 export default function ThankYouPage() {
   return (
-    <Suspense fallback={<LoadingFallback />}>
-      <ThankYouContent />
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 py-12">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-56 mb-4" />
+              <div className="h-4 bg-gray-200 rounded w-full mb-2" />
+              <div className="h-4 bg-gray-200 rounded w-2/3" />
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <ThankYouInner />
     </Suspense>
   );
 }

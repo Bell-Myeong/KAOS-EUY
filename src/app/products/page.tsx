@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import type { ProductCategory } from '@/types';
 import { ProductGrid } from '@/components/products/ProductGrid';
 import { fadeInUp } from '@/lib/animations';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -11,11 +10,9 @@ import { isForbiddenError } from '@/lib/api/errors';
 
 export default function ProductsPage() {
   const { t } = useLanguage();
-  const [category, setCategory] = useState<ProductCategory | 'all'>('all');
   const [inStockOnly, setInStockOnly] = useState(false);
 
   const { data, isLoading, error } = useProducts({
-    category: category === 'all' ? undefined : category,
     inStock: inStockOnly ? true : undefined,
   });
 
@@ -39,21 +36,6 @@ export default function ProductsPage() {
 
         {/* Filters */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 mb-8 flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
-          <div className="flex items-center gap-3">
-            <label className="text-sm font-semibold text-gray-700">Category</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value as ProductCategory | 'all')}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            >
-              <option value="all">All</option>
-              <option value="tshirt">T-shirt</option>
-              <option value="hoodie">Hoodie</option>
-              <option value="totebag">Tote bag</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
           <label className="flex items-center gap-2 text-sm text-gray-700">
             <input
               type="checkbox"

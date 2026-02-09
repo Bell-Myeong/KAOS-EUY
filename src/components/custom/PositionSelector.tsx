@@ -72,7 +72,7 @@ export function PositionSelector() {
               </div>
             </div>
 
-            {part.previewUrl && (
+            {part.image_url && (
               <div className="mt-2 text-xs text-green-600 flex items-center gap-1">
                 <Check className="w-3 h-3" />
                 Design uploaded

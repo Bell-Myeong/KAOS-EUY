@@ -1,6 +1,6 @@
 import { getSupabaseBrowserClient } from '@/lib/supabase/browser';
 import type { Database } from '@/lib/supabase/database.types';
-import type { Product, ProductCategory, ProductColor, Size } from '@/types';
+import type { Product, ProductColor, Size } from '@/types';
 import { ApiError } from './errors';
 
 type DbProduct = Database['public']['Tables']['products']['Row'];
@@ -29,7 +29,6 @@ function normalizeProduct(p: DbProduct): Product {
     description: p.description ?? '',
     price: p.price,
     images: Array.isArray(p.images) ? p.images : [],
-    category: p.category as ProductCategory,
     sizes: (Array.isArray(p.sizes) ? p.sizes : []) as Size[],
     colors: parseProductColors(p.colors),
     in_stock: p.in_stock,
@@ -39,7 +38,6 @@ function normalizeProduct(p: DbProduct): Product {
 
 export async function fetchProducts(params?: {
   slug?: string;
-  category?: ProductCategory;
   inStock?: boolean;
 }) {
   const supabase = getSupabaseBrowserClient();
@@ -50,7 +48,6 @@ export async function fetchProducts(params?: {
     .order('created_at', { ascending: false });
 
   if (params?.slug) query = query.eq('slug', params.slug);
-  if (params?.category) query = query.eq('category', params.category);
   if (typeof params?.inStock === 'boolean') {
     query = query.eq('in_stock', params.inStock);
   }
@@ -63,4 +60,3 @@ export async function fetchProducts(params?: {
 
   return (data ?? []).map(normalizeProduct);
 }
-

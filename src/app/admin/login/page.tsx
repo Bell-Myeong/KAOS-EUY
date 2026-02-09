@@ -9,12 +9,18 @@ import { useAdminStore } from '@/stores/admin';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const { login, isAuthenticated } = useAdminStore();
+  const login = useAdminStore((s) => s.login);
+  const refresh = useAdminStore((s) => s.refresh);
+  const isAuthenticated = useAdminStore((s) => s.isAuthenticated);
+  const storeLoading = useAdminStore((s) => s.isLoading);
+  const storeError = useAdminStore((s) => s.error);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -24,18 +30,11 @@ export default function AdminLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setIsLoading(true);
-
     const success = await login(email, password);
 
     if (success) {
       router.push('/admin/dashboard');
-    } else {
-      setError('Invalid email or password');
     }
-
-    setIsLoading(false);
   };
 
   return (
@@ -61,14 +60,14 @@ export default function AdminLoginPage() {
             <p className="text-gray-500 mt-1">Sign in to access the admin panel</p>
           </div>
 
-          {error && (
+          {storeError && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 mb-4"
             >
               <AlertCircle className="w-5 h-5 flex-shrink-0" />
-              <p className="text-sm">{error}</p>
+              <p className="text-sm">{storeError}</p>
             </motion.div>
           )}
 
@@ -119,18 +118,12 @@ export default function AdminLoginPage() {
               variant="primary"
               size="lg"
               fullWidth
-              loading={isLoading}
+              loading={storeLoading}
+              disabled={storeLoading}
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              {storeLoading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
-
-          {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-slate-50 rounded-lg">
-            <p className="text-xs text-slate-500 mb-2">Demo Credentials:</p>
-            <p className="text-sm font-mono text-slate-700">admin@kaoseuy.com</p>
-            <p className="text-sm font-mono text-slate-700">admin123</p>
-          </div>
         </div>
 
         {/* Back to site */}

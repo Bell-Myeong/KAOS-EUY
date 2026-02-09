@@ -9,8 +9,7 @@ export interface DesignPosition {
 
 export interface CustomPart {
   applied: boolean;
-  imageFile: File | null;
-  previewUrl: string | null;
+  image_url: string | null;
   text: string;
   position: DesignPosition;
   scale: number;
@@ -24,7 +23,7 @@ export interface CustomDesignState {
   activePosition: CustomPosition;
   setActivePosition: (position: CustomPosition) => void;
   togglePart: (position: CustomPosition) => void;
-  setPartImage: (position: CustomPosition, file: File | null) => void;
+  setPartImageUrl: (position: CustomPosition, url: string | null) => void;
   setPartText: (position: CustomPosition, text: string) => void;
   setPartPosition: (position: CustomPosition, pos: DesignPosition) => void;
   setPartScale: (position: CustomPosition, scale: number) => void;
@@ -36,8 +35,7 @@ export interface CustomDesignState {
 
 const initialPart: CustomPart = {
   applied: false,
-  imageFile: null,
-  previewUrl: null,
+  image_url: null,
   text: '',
   position: { x: 0, y: 0 },
   scale: 1,
@@ -59,20 +57,19 @@ export const useCustomDesignStore = create<CustomDesignState>((set, get) => ({
   togglePart: (position) => {
     set((state) => ({
       [position]: {
-        ...state[position],
+        ...(!state[position].applied ? state[position] : initialPart),
         applied: !state[position].applied,
       },
     }));
   },
 
-  setPartImage: (position, file) => {
-    const previewUrl = file ? URL.createObjectURL(file) : null;
+  setPartImageUrl: (position, url) => {
     set((state) => ({
       [position]: {
         ...state[position],
-        imageFile: file,
-        previewUrl,
-        applied: true,
+        image_url: url,
+        text: url ? '' : state[position].text,
+        applied: Boolean(url) || (url ? false : state[position].text.trim().length > 0),
       },
     }));
   },
@@ -82,7 +79,8 @@ export const useCustomDesignStore = create<CustomDesignState>((set, get) => ({
       [position]: {
         ...state[position],
         text,
-        applied: text.length > 0 || state[position].imageFile !== null,
+        image_url: text.trim().length > 0 ? null : state[position].image_url,
+        applied: text.trim().length > 0 || (text.trim().length > 0 ? false : state[position].image_url !== null),
       },
     }));
   },
@@ -106,21 +104,10 @@ export const useCustomDesignStore = create<CustomDesignState>((set, get) => ({
   },
 
   resetPart: (position) => {
-    const state = get();
-    if (state[position].previewUrl) {
-      URL.revokeObjectURL(state[position].previewUrl!);
-    }
     set({ [position]: { ...initialPart } });
   },
 
   resetAll: () => {
-    const state = get();
-    ['front', 'back', 'leftArm', 'rightArm'].forEach((pos) => {
-      const part = state[pos as CustomPosition];
-      if (part.previewUrl) {
-        URL.revokeObjectURL(part.previewUrl);
-      }
-    });
     set({
       front: { ...initialPart },
       back: { ...initialPart },
@@ -133,7 +120,7 @@ export const useCustomDesignStore = create<CustomDesignState>((set, get) => ({
   getAppliedParts: () => {
     const state = get();
     const positions: CustomPosition[] = ['front', 'back', 'leftArm', 'rightArm'];
-    return positions.filter((pos) => state[pos].applied);
+    return positions.filter((pos) => state[pos].applied && (Boolean(state[pos].image_url) || state[pos].text.trim().length > 0));
   },
 
   getCustomPrice: () => {
